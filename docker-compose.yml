@@ -1,0 +1,128 @@
+version: "3.9"
+
+networks:
+    reminder:
+        name: reminder
+
+services:
+
+    nginx-be:
+        build:
+            context: .
+            dockerfile: nginx-be.dockerfile
+        depends_on:
+            - php
+            - mysql
+        container_name: nginxbe
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - ./be:/var/www/html
+        networks:
+            - reminder
+
+    # nginx-fe:
+    #     build:
+    #         context: .
+    #         dockerfile: nginx-fe.dockerfile
+    #     depends_on:
+    #         - php
+    #     container_name: nginxfe
+    #     ports:
+    #         - 81:80
+    #         - 8443:443
+    #         - 9229:9229
+    #         - 9230:9230
+    #     volumes:
+    #         - ./fe:/var/www/html
+    #     networks:
+    #         - reminder
+
+    php:
+        build:
+            context: .
+            dockerfile: php.dockerfile
+        container_name: php
+        volumes:
+            - ./be:/var/www/html
+        networks:
+            - reminder
+
+    mysql:
+        image: mysql:8.0.27
+        container_name: mysql
+        ports:
+            - 3306:3306
+        volumes:
+            - ./data/mysql:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: reminderdb
+            MYSQL_USER: reminderdb
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: secret
+        networks:
+            - reminder
+    
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:5.2
+        depends_on:
+            - mysql
+        container_name: phpmyadmin
+        ports:
+            - 8001:80
+        networks:
+            - reminder
+        environment:
+             - PMA_HOST=mysql
+             - PMA_PORT=3306
+             - PMA_ARBITRARY=1
+
+    composer:
+        image: composer:latest
+        container_name: composer
+        volumes:
+            - ./be:/var/www/html
+        working_dir: /var/www/html
+        networks:
+            - reminder
+
+    npm:
+        # image: node:alpine
+        # container_name: npm
+        # environment:
+        #     - NODE_ENV=production
+        # volumes:
+        #     - ./fe:/var/www/html
+        # working_dir: /var/www/html
+        # entrypoint: ['npm']
+        # expose:
+        #     - "8081"
+        # command: "npm start"
+        # networks:
+        #     - reminder
+        image: "node:alpine3.17"
+        user: "node"
+        working_dir: /fe
+        environment:
+          - NODE_ENV=production
+        volumes:
+            - ./fe:/fe
+        ports:
+            - 3000:3000
+        command: "npm start"
+    
+    # frontend:
+    #     build:
+    #         context: fe
+    #         target: development
+    #     ports:
+    #         - 3000:3000
+    #     volumes:
+    #         - ./fe/src:/var/www/html/src
+    #         - /var/www/html/src/node_modules    
+    #     networks:
+    #         - reminder
+    #     depends_on:
+    #         - npm
+      
