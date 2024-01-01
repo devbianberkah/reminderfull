@@ -59,6 +59,7 @@ services:
         environment:
             MYSQL_DATABASE: reminderdb
             MYSQL_USER: reminderdb
+            MYSQL_ROOT_HOST: "%"
             MYSQL_PASSWORD: secret
             MYSQL_ROOT_PASSWORD: secret
         networks:
