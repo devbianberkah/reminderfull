@@ -13,19 +13,16 @@ class AcceptedRequestResource extends JsonResource
      * @return array<string, mixed>
      */
     public $status;
-    public $message;
-
+  
     public function __construct($status,$message,$resource){
         parent::__construct($resource);
         $this->status = $status;
-        $this->message = $message;
     }
 
     public function toArray(Request $request): array
     {
         return [
-            'status' => $this->status,
-            'message' => $this->message,
+            'ok' => $this->status,
             'data' => $this->resource
         ];
     }
